@@ -37,7 +37,7 @@ void KalmanFilter::Update(const VectorXd &z) {
 
   //new estimate
   x_ = x_ + (K*y);
-  long x_size = x_.size();
+  int x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
   P_ = ((I - (K*H_))*P_);
   // Calculate h(x')
@@ -45,12 +45,12 @@ void KalmanFilter::Update(const VectorXd &z) {
 
 void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
-  double px = x_[0];
-  double py = x_[1];
-  double vx = x_[2];
-  double vy = x_[3];
+  float px = x_[0];
+  float py = x_[1];
+  float vx = x_[2];
+  float vy = x_[3];
 
-  double hypo_ = sqrt(pow(px,2.)+pow(py,2.));
+  float hypo_ = sqrt(pow(px,2.)+pow(py,2.));
 
   VectorXd hx = VectorXd(3);
   hx << hypo_, atan2(py,px), ((px*vx+py*vy)/hypo_);
@@ -64,7 +64,7 @@ void KalmanFilter::UpdateEKF(const VectorXd &z) {
 
   //new estimate
   x_ = x_ + (K*y);
-  long x_size = x_.size();
+  int x_size = x_.size();
   MatrixXd I = MatrixXd::Identity(x_size, x_size);
   P_ = ((I - (K*H_))*P_);
 }

@@ -37,25 +37,28 @@ VectorXd Tools::CalculateRMSE(const vector<VectorXd> &estimations,
 MatrixXd Tools::CalculateJacobian(const VectorXd& x_state) {
 
   // Calculate a Jacobian here.
-  MatrixXd Hj_(3,4);
+  MatrixXd Hj(3,4);
 
-	double p_x = x_state(0);
-	double p_y = x_state(1);
-	double v_x = x_state(2);
-	double v_y = x_state(3);
-  // std::cout << "px,py,vx,vy " << p_x << p_y << v_x << v_y << std::endl;
+	float px = x_state(0);
+	float py = x_state(1);
+	float vx = x_state(2);
+	float vy = x_state(3);
 
-	if(p_x == 0 || p_y == 0){
-	    std::cout << "Division by 0 Error!" << std::endl;
-      return Hj_;
+  //pre-compute a set of terms to avoid repeated calculation
+	float c1 = px*px+py*py;
+	float c2 = sqrt(c1);
+	float c3 = (c1*c2);
+
+	//check division by zero
+	if(fabs(c1) < 0.0001){
+		std::cout << "CalculateJacobian () - Error - Division by Zero" << std::endl;
+		return Hj;
 	}
 
-  Hj_ << (p_x/sqrt(pow(p_x,2)+pow(p_y,2))),(p_y/sqrt(pow(p_x,2)+pow(p_y,2))),0,0,
-    (-p_y/(pow(p_x,2)+pow(p_y,2))),(p_x/(pow(p_x,2)+pow(p_y,2))),0,0,
-    (((p_y*(v_x*p_y-v_y*p_x))/(pow((pow(p_x,2)+pow(p_y,2)),(3/2))))),
-    (((p_x*(v_y*p_x-v_x*p_y))/(pow((pow(p_x,2)+pow(p_y,2)),(3/2))))),
-    (p_x/sqrt(pow(p_x,2)+pow(p_y,2))),
-    (p_y/sqrt(pow(p_x,2)+pow(p_y,2)));
+	//compute the Jacobian matrix
+	Hj << (px/c2), (py/c2), 0, 0,
+		  -(py/c1), (px/c1), 0, 0,
+		  py*(vx*py - vy*px)/c3, px*(px*vy - py*vx)/c3, px/c2, py/c2;
 
-  return Hj_;
+	return Hj;
 }
