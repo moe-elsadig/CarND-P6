@@ -71,10 +71,7 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
     // Initialize the state ekf_.x_ with the first measurement.
     // first measurement
     cout << "EKF: " << endl;
-    ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0., 0.;
-    if(ekf_.x_[0] == 0 && ekf_.x_[0]){
-      ekf_.x_ << 1,1,1,1;
-    }
+
     previous_timestamp_ = measurement_pack.timestamp_;
 
     // Create the covariance matrix.
@@ -91,6 +88,13 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       float y = ro * sin(phi);
       float vx = ro_dot * cos(phi);
       float vy = ro_dot * sin(phi);
+
+      if ( fabs(x) <= 0.001 && fabs(y) <= 0.001 )
+      {
+         x = 0.1;
+         y = 0.1;
+      }
+
       // Initialize state.
       ekf_.x_ << x, y, vx, vy;
       ekf_.R_ = R_radar_;
@@ -137,7 +141,10 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
 			   dt_3/2*noise_ax, 0., dt_2*noise_ax, 0.,
 			   0., dt_3/2*noise_ay, 0., dt_2*noise_ay;
 
-  ekf_.Predict();
+   if ( dt > 0.001 )
+   {
+       ekf_.Predict();
+   }
 
   /*****************************************************************************
    *  Update
@@ -158,15 +165,6 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       ekf_.Update(measurement_pack.raw_measurements_);
   }
 
-  if(ekf_.x_[0] != ekf_.x_[0]){
-    std::cout << "nan Result Error! resetting X-positions and P-positions." << std::endl;
-    ekf_.x_ << 1., 1., 1., 1.;
-    ekf_.P_ << 1., 0., 0., 0.,
-        			  0., 1., 0., 0.,
-        			  0., 0., 10000., 0.,
-        			  0., 0., 0., 10000.;
-    is_initialized_ = false;
-  }
   // print the output
   cout << "x_ = " << ekf_.x_ << endl;
   cout << "P_ = " << ekf_.P_ << endl;
